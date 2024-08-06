@@ -1,5 +1,9 @@
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
+//1366X
+//728Y
+const canvasX = 1366;
+const canvasY = 728;
 
 window.onload = startGame();
 var Fps = 60;
@@ -86,10 +90,7 @@ var creditChoice = [
     ["( ' o ') - Ok, Eduardo Mello Lopes"]
 ]
 
-var option1SpriteScenes = [null, null, option1Ascii, option1Ascii, option1Ascii, option1Ascii, creditChoice];
-var option2SpriteScenes = [null, null, option2Ascii, option2Ascii, option2Ascii, option2Ascii, creditChoice];
-var textsSpriteScenes = [null, null, text1Ascii, text2Ascii, text3Ascii, text4Ascii, text5Ascii]
-
+//Animations
 var loadAnim = [
     [[""]],
     [[""]],
@@ -107,6 +108,20 @@ var loadAnim = [
     [[""]],
     [["o"]],
 ];
+var walkingAnim = [
+    [[" o "],
+     ["/|\\"],
+     ["/ \\"]],
+    [[" o "],
+     ["/|\\"],
+     [" >\\"]],
+    [[" o "],
+     ["/|\\"],
+     [" |\\"]],
+    [[" o "],
+     ["/|\\"],
+     [" |>"]]
+];
 
 //objects
 
@@ -118,8 +133,8 @@ var mouse = [
 ]
 
 var titleText = [
-    parseInt((window.innerWidth * (1/2)) / (textSize / 2)) - 35, //X
-    parseInt((window.innerHeight * (1/5)) / textSize) - 1, //Y
+    parseInt((canvasX * (1/2)) / (textSize / 2)) - 35, //X
+    parseInt((canvasY * (1/5)) / textSize) - 1, //Y
     1, //XSize
     1, //YSize
     5, //light color
@@ -130,8 +145,8 @@ var titleText = [
     ["none", "sceneUp", "none"], //functions
 ];
 var loadingDot = [
-    parseInt((window.innerWidth * (1/2)) / (textSize / 2)), //X
-    parseInt((window.innerHeight * (1/2)) / textSize), //Y
+    parseInt((canvasX * (1/2)) / (textSize / 2)), //X
+    parseInt((canvasY * (1/2)) / textSize), //Y
     1, //XSize
     1, //YSize
     5, //light color
@@ -142,8 +157,8 @@ var loadingDot = [
     ["sceneUp", "none", "none"], //functions
 ];
 var subTitle = [
-    parseInt((window.innerWidth * (1/2)) / (textSize / 2)), //X
-    parseInt((window.innerHeight * (2/4)) / textSize), //Y
+    parseInt((canvasX * (1/2)) / (textSize / 2)), //X
+    parseInt((canvasY * (2/4)) / textSize), //Y
     1, //XSize
     1, //YSize
     5, //light color
@@ -154,8 +169,8 @@ var subTitle = [
     ["none", "none", "none"], //functions
 ];
 var pressEnter = [
-    parseInt((window.innerWidth * (1/2)) / (textSize / 2)), //X
-    parseInt((window.innerHeight * (7/8)) / textSize), //Y
+    parseInt((canvasX * (1/2)) / (textSize / 2)), //X
+    parseInt((canvasY * (7/8)) / textSize), //Y
     1, //XSize
     1, //YSize
     5, //light color
@@ -167,68 +182,40 @@ var pressEnter = [
 ];
 
 var text1 = [
-    parseInt((window.innerWidth * (1/2)) / (textSize / 2)), //X
-    parseInt((window.innerHeight * (1/4)) / textSize), //Y
+    parseInt((canvasX * (1/2)) / (textSize / 2)), //X
+    parseInt((canvasY * (1/6)) / textSize), //Y
     1, //XSize
     1, //YSize
     0, //light color
     text1Ascii, //Ascii Art
     "center", //Ascii alignment
     ["writeText", "fadeOut", "none"], //animations (when start, when leave, evt animations...)
-    [2, 2, 0], //animations time
+    [8, 2, 0], //animations time
     ["none", "SceneUp", "none"], //functions
 ];
 
-var option1 = [
-    parseInt((window.innerWidth * (1/4)) / (textSize / 2)), //X
-    24, //Y
-    12, //X size
-    5, //Y size
-    "none", //start animation;
-    "none", //type of function
-    5, //color
-    option1Ascii, //Ascii Art
-    "start", //alignment
-    4, //time of the animation
-    "fadeOut", //leave animation
-    "mouse option", //type collision
-];
-var option2 = [
-    parseInt((window.innerWidth * (3/4)) / (textSize / 2)), //X
-    24, //Y
-    12, //X size
-    5, //Y size
-    "none", //start animation;
-    "none", //type of function
-    5, //color
-    option2Ascii, //Ascii Art
-    "start", //alignment
-    4, //time of the animation
-    "fadeOut", //leave animation
-    "mouse option", //type collision
-];
 var character = [
-    parseInt((window.innerWidth * (1/2)) / (textSize / 2)), //X
-    parseInt((window.innerHeight * (1/2)) / textSize), //Y
+    parseInt((canvasX * (1/2)) / (textSize / 2)), //X
+    parseInt((canvasY * (1/2)) / textSize), //Y
     1, //XSize
     1, //YSize
     0, //light color
     characterAscii, //Ascii Art
     "start", //Ascii alignment
     ["fadeIn", "fadeOut", "walking"], //animations (when start, when leave, evt animations...)
-    [2, 2, 0], //animations time
+    [4, 2, 15], //animations time
     ["none", "none", "none"], //functions
 ];
 var key = [
-    parseInt((window.innerWidth * (3/4)) / (textSize / 2)), //X
-    parseInt((window.innerHeight * (3/4)) / textSize), //Y
+    parseInt((canvasX * (3/4)) / (textSize / 2)), //X
+    parseInt((canvasY * (3/4)) / textSize), //Y
     1, //XSize
     1, //YSize
-    5, //light color
+    0, //light color
     keyAscii, //Ascii Art
     "start", //Ascii alignment
     ["fadeIn", "fadeOut", "none"], //animations (when start, when leave, evt animations...)
-    [2, 2, 0], //animations time
+    [4, 2, 0], //animations time
     ["none", "none", "none"], //functions
 ];
 
@@ -241,8 +228,8 @@ var allScenes = [scene0Objects, scene1Objects, scene2Objects];
 var objectsToAnimate = [];
 
 function startGame() {
-    canvas.width = window.outerWidth;
-    canvas.height = window.outerHeight;
+    canvas.width = canvasX;
+    canvas.height = canvasY;
     
     document.addEventListener("mousedown", mouseClick);
     document.addEventListener("mousemove", mouseMove);
@@ -274,11 +261,10 @@ function iterateObjs() {
         var object = allScenes[currentScene][i]
 
         if(isMouseClicked) {
-            console.log("mouse clicked");
             if(object == character) {
-                console.log("found character");
-                character[0] = mouse[0];
-                character[1] = mouse[1];
+                objectsToAnimate.push(object, object[7][2], object[8][2], 0, 0, object[5]);
+                object[0] = mouse[0];
+                object[1] = mouse[1];
             }
         }
         if(sceneHasChang) {
@@ -303,7 +289,6 @@ function iterateObjs() {
 }
 
 function afterAnim(object, type) {
-    console.log(object)
     switch(object[9][object[7].indexOf(type)]) {
         case "sceneUp":
             console.log("sceneUp")
@@ -312,22 +297,30 @@ function afterAnim(object, type) {
             sceneStarted = true;
             break;
         case "sceneDown":
-            currentScene = 0;
-            break;
-        case "show Option":
-            if(type == "write Text") {
-                allScenes[currentScene].push(option1.slice(), option2.slice());
-            } else {currentScene++; sceneStarted = true;}
+            currentScene--;
+            canInput = true;
+            sceneStarted = true;
             break;
     }
 }
 
 function iterateAnims() {
     for(var a=0; a<objectsToAnimate.length; a++) {
+        console.log(property)
         var property = objectsToAnimate[a];
         var obj = property[0]
-        
-        var totalFrames = property[2] * Fps;
+        switch(property[1]){
+            case "walking":
+                var totalFrames = property[2];
+                break;
+            case "fadeOut":
+            case "fadeIn":
+            case "load":
+            case "writeText":
+            case "anim1":
+                var totalFrames = property[2] * Fps;
+                break;
+        }
         property[3] += 1;
         if(property[3] >= totalFrames - 1) {
             afterAnim(obj , property[1]);
@@ -337,7 +330,6 @@ function iterateAnims() {
             switch(property[1]) {
                 case "anim1":
                     if(property[3] % (totalFrames/titleTextAnim.length) >= (totalFrames/titleTextAnim.length) - 1) {
-                        console.log("animation frame");
                         obj[5] = titleTextAnim[property[4]];
                         property[4]++;
                     }
@@ -359,12 +351,10 @@ function iterateAnims() {
                     }
                     break;
                 case "writeText":
-                    console.log("write it")
                     for(var y = 0; y<property[5].length; y++) {
                         const originalText = property[5][y][0];
                         if(property[3] % (totalFrames / originalText.length / property[5].length) >= (totalFrames / originalText.length / property[5].length) - 1) {
                             var newText = originalText.substring(0, property[4] + 2);
-                            console.log(newText);
                             obj[5] = [[newText]];
                             obj[4] = 5;
                             property[4]++;
@@ -372,7 +362,11 @@ function iterateAnims() {
                     }
                     break;
                 case "walking":
-                    totalFrames = property[2]
+                    if(property[3] % (property[2]) >= property[2] - 1) {
+                        console.log("walk frame");
+                        obj[5] = walkingAnim[property[4]];
+                        property[4]++
+                    }
                     break;
             }
         }
@@ -418,7 +412,7 @@ function drawnSquare(obj) {
 function drawnText(obj) {
     ctx.fillStyle = luminocityVals[obj[4]];
     ctx.textAlign = obj[6];
-    ctx.font = textSize + "px Consolas";
+    ctx.font = textSize + "px Courier";
     var AsciiArt = obj[5];
     for(var y = 0; y<AsciiArt.length; y++) {
         ctx.fillText(String(AsciiArt[y]), obj[0] * (textSize / 2), (obj[1] * 20) + textSize * y);

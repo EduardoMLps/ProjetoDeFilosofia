@@ -17,7 +17,7 @@ var enterKeyPressed = false;
 //game variables
 var currentScene = 0;
 var sceneHasChang = false;
-var sceneStarted = false;
+var sceneStarted = true;
 
 //colors
 var luminocityVals = [rgb(0, 0, 0), rgb(51, 51, 51), rgb(102, 102, 102) , rgb(153, 153, 153), rgb(204, 204, 204), rgb(255, 255, 255)];
@@ -108,10 +108,7 @@ var loadAnim = [
     [[""]],
     [["o"]],
 ];
-var walkingAnim = [
-    [[" o "],
-     ["/|\\"],
-     ["/ \\"]],
+var walkingAnimRight = [
     [[" o "],
      ["/|\\"],
      [" >\\"]],
@@ -120,7 +117,24 @@ var walkingAnim = [
      [" |\\"]],
     [[" o "],
      ["/|\\"],
-     [" |>"]]
+     [" |>"]],
+    [[" o "],
+     ["/|\\"],
+     ["/ \\"]]
+];
+var walkingAnimLeft = [
+    [[" o "],
+     ["/|\\"],
+     ["/< "]],
+    [[" o "],
+     ["/|\\"],
+     ["/| "]],
+    [[" o "],
+     ["/|\\"],
+     ["<| "]],
+    [[" o "],
+     ["/|\\"],
+     ["/ \\"]]
 ];
 
 //objects
@@ -137,7 +151,7 @@ var titleText = [
     parseInt((canvasY * (1/5)) / textSize) - 1, //Y
     1, //XSize
     1, //YSize
-    5, //light color
+    0, //light color
     titleTextAscii, //Ascii Art
     "start", //Ascii alignment
     ["fadeIn", "fadeOut", "none"], //animations (when start, when leave, evt animations...)
@@ -161,7 +175,7 @@ var subTitle = [
     parseInt((canvasY * (2/4)) / textSize), //Y
     1, //XSize
     1, //YSize
-    5, //light color
+    0, //light color
     subTitleAscii, //Ascii Art
     "center", //Ascii alignment
     ["fadeIn", "fadeOut", "none"], //animations (when start, when leave, evt animations...)
@@ -173,7 +187,7 @@ var pressEnter = [
     parseInt((canvasY * (7/8)) / textSize), //Y
     1, //XSize
     1, //YSize
-    5, //light color
+    0, //light color
     EnterAscii, //Ascii Art
     "center", //Ascii alignment
     ["fadeIn", "fadeOut", "none"], //animations (when start, when leave, evt animations...)
@@ -203,8 +217,9 @@ var character = [
     characterAscii, //Ascii Art
     "start", //Ascii alignment
     ["fadeIn", "fadeOut", "walking"], //animations (when start, when leave, evt animations...)
-    [4, 2, 15], //animations time
-    ["none", "none", "none"], //functions
+    [4, 2, 0.5], //animations time
+    ["none", "none", "walk end"], //functions
+    [3], //Other propertys
 ];
 var key = [
     parseInt((canvasX * (3/4)) / (textSize / 2)), //X
@@ -260,11 +275,10 @@ function iterateObjs() {
     for(var i = 0; i<allScenes[currentScene].length; i++) {
         var object = allScenes[currentScene][i]
 
-        if(isMouseClicked) {
+        if(isMouseClicked && canInput) {
             if(object == character) {
-                objectsToAnimate.push(object, object[7][2], object[8][2], 0, 0, object[5]);
-                object[0] = mouse[0];
-                object[1] = mouse[1];
+                objectsToAnimate.push([object, object[7][2], object[8][2], 0, 0, object[5], object[0], object[1]]);
+                canInput = false;
             }
         }
         if(sceneHasChang) {
@@ -301,17 +315,20 @@ function afterAnim(object, type) {
             canInput = true;
             sceneStarted = true;
             break;
+        case "walk end":
+            object[5] = walkingAnimLeft[3];
+            canInput = true;
+            break;
     }
 }
 
 function iterateAnims() {
     for(var a=0; a<objectsToAnimate.length; a++) {
-        console.log(property)
         var property = objectsToAnimate[a];
         var obj = property[0]
         switch(property[1]){
             case "walking":
-                var totalFrames = property[2];
+                var totalFrames = (property[2] * Fps) * Math.sqrt((property[6] - mouse[0]) * (property[6] - mouse[0]) + (property[7] - mouse[1]) * (property[7] - mouse[1]));
                 break;
             case "fadeOut":
             case "fadeIn":
@@ -362,10 +379,18 @@ function iterateAnims() {
                     }
                     break;
                 case "walking":
-                    if(property[3] % (property[2]) >= property[2] - 1) {
-                        console.log("walk frame");
-                        obj[5] = walkingAnim[property[4]];
-                        property[4]++
+                    if(property[3] % (property[2] * Fps) >= (property[2] * Fps) - 1) {
+                        obj[0] -= objDirections(obj, mouse)[0]; obj[1] -= objDirections(obj, mouse)[1];
+                        var Ascii = null;
+                        if(objDirections(obj, mouse)[0] > 0) {
+                            Ascii = walkingAnimLeft[property[4]];
+                        }  else {Ascii = walkingAnimRight[property[4]];}
+                        obj[5] = Ascii;
+                        if(property[4] >= Ascii.length) {
+                            property[4] = 0;
+                        } else {
+                            property[4]++
+                        }
                     }
                     break;
             }
@@ -375,6 +400,25 @@ function iterateAnims() {
 
 function SqrCollision(obj1, obj2) {
     return obj1[0] <= obj2[0] && obj1[1] <= obj2[1] && obj1[0] + obj1[2] >= obj2[0] && obj1[1] + obj1[3] >= obj2[1];
+}
+function objDirections(obj1, obj2) {
+    vector = [0, 0];
+    if(obj1[0] < obj2[0]) {
+        vector[0] = -1;
+    } else if(obj1[0] > obj2[0]) {
+        vector[0] = 1;
+    } else {
+        vector[0] = 0;
+    }
+
+    if(obj1[1] < obj2[1]) {
+        vector[1] = -1;
+    } else if(obj1[1] > obj2[1]) {
+        vector[1] = 1;
+    } else {
+        vector[1] = 0;
+    }
+    return vector;
 }
 
 //input functions
@@ -386,7 +430,9 @@ function mouseClick(evt) {
     }
 }
 function mouseMove(evt) {
-    mouse = [parseInt(evt.x / (textSize / 2)), parseInt(evt.y / textSize), 1, 1];
+    if(canInput) {
+        mouse = [parseInt(evt.x / (textSize / 2)), parseInt(evt.y / textSize), 1, 1];
+    }
 }
 function keyDown(evt) {
     switch(evt.keyCode) {
